@@ -1,0 +1,8 @@
+# default stuff
+**/*~
+
+# generic build
+**/*.o
+
+# project ignores
+sh/*.conf
