@@ -4,6 +4,7 @@
 # load defaults
 LOCAL_PROXY_PORT=9080
 SSH_CONTROL_DIR="$HOME/.ssh/control"
+CMD_POLL_WAIT=2
 
 
 # set VERBOSE so it can be assumed not empty in further usage
@@ -26,6 +27,8 @@ Usage: $(basename $0)
        [-p AWS_PROFILE]               : aws profile name
        [-s AWS_EC2_SECURITY_GROUP]    : aws ec2 security group
        [-t AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
+       [-w CMD_POLL_WAIT]             : seconds to wait betwen AWS commands
+                                          when polling ($CMD_POLL_WAIT)
 
        All arguments can be set via environment variables named the
        same as shown above in the option arguments. Variables defined
@@ -69,7 +72,7 @@ shutdown_proxy()
 
 
 # parse command line
-args=$(getopt hvca:d:f:k:l:p:s:t: $*)
+args=$(getopt hvca:d:f:k:l:p:s:t:w: $*)
 if [ $? -ne 0 ]
 then
     usage
@@ -126,6 +129,10 @@ do
             t_arg="$2"
             shift; shift;
             ;;
+        -w)
+            w_arg="$2"
+            shift; shift;
+            ;;
         --)
             shift;
             break;
@@ -167,6 +174,7 @@ fi
 [ "$p_arg"X != X ] && AWS_PROFILE="$p_arg"
 [ "$s_arg"X != X ] && AWS_EC2_SECURITY_GROUP="$s_arg"
 [ "$t_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$t_arg"
+[ "$w_arg"X != X ] && CMD_POLL_WAIT="$w_arg"
 
 
 # run usage
@@ -239,6 +247,7 @@ LOCAL_PROXY_PORT:          $LOCAL_PROXY_PORT
 AWS_PROFILE:               $AWS_PROFILE
 AWS_EC2_SECURITY_GROUP:    $AWS_EC2_SECURITY_GROUP
 AWS_EC2_INSTANCE_TYPE:     $AWS_EC2_INSTANCE_TYPE
+CMD_POLL_WAIT:             $CMD_POLL_WAIT
 "
 fi
 
@@ -372,7 +381,7 @@ do
     # which will give sshd some to start
     instance_indicator=$(echo $instance_state | cut -c 1)
     loop_count=0
-    while [ $loop_count -lt 2 ]
+    while [ $loop_count -lt $CMD_POLL_WAIT ]
     do
         loop_count=$((loop_count + 1))
         sleep 1
@@ -433,7 +442,7 @@ do
     fi
     
     loop_count=0
-    while [ $loop_count -lt 2 ]
+    while [ $loop_count -lt $CMD_POLL_WAIT ]
     do
         loop_count=$((loop_count + 1))
         sleep 1
