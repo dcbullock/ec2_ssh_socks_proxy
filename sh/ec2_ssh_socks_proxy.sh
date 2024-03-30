@@ -59,7 +59,7 @@ shutdown_proxy()
 
 
 # parse command line
-args=$(getopt hvcl:p:k:f:s:i:a: $*)
+args=$(getopt hvcl:p:k:f:s:t:a: $*)
 if [ $? -ne 0 ]
 then
     usage
@@ -104,8 +104,8 @@ do
             s_arg="$2"
             shift; shift;
             ;;
-        -i)
-            i_arg="$2"
+        -t)
+            t_arg="$2"
             shift; shift;
             ;;
         -a)
@@ -150,7 +150,7 @@ fi
 [ "$k_arg"X != X ] && AWS_EC2_SSH_KEY_NAME="$k_arg"
 [ "$f_arg"X != X ] && AWS_EC2_SSH_KEY_FILE_NAME="$f_arg"
 [ "$s_arg"X != X ] && AWS_EC2_SECURITY_GROUP="$s_arg"
-[ "$i_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$i_arg"
+[ "$t_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$t_arg"
 [ "$a_arg"X != X ] && AWS_EC2_AMI_ID="$a_arg"
 
 
