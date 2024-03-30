@@ -2,6 +2,8 @@
 
 
 port_default=9080
+default_control_dir="$HOME/.ssh/control"
+
 
 # set VERBOSE so it can be assumed not empty in further usage
 VERBOSE=no
@@ -14,13 +16,15 @@ Usage: $(basename $0)
        [-h]                           : print help
        [-v]                           : verbose output
        [-c]                           : check config and quit
+       [-a AWS_AMI_ID]                : aws instance type
+       [-d SSH_CONTROL_DIR            : directory for ssh master socket
+                                      :   ($default_control_dir)
+       [-f AWS_EC2_SSH_KEY_FILE_NAME] : aws ec2 ssh key file name
+       [-k AWS_EC2_SSH_KEY_NAME]      : aws ec2 ssh key name
        [-l LOCAL_PROXY_PORT]          : local socks5 listen port ($port_default)
        [-p AWS_PROFILE]               : aws profile name
-       [-k AWS_EC2_SSH_KEY_NAME]      : aws ec2 ssh key name
-       [-f AWS_EC2_SSH_KEY_FILE_NAME] : aws ec2 ssh key file name
        [-s AWS_EC2_SECURITY_GROUP]    : aws ec2 security group
-       [-i AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
-       [-a AWS_AMI_ID]                : aws instance type
+       [-t AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
 
        All arguments can be set via environment variables named the
        same as shown above in the option arguments. Variables defined
@@ -40,7 +44,7 @@ Usage: $(basename $0)
 shutdown_proxy()
 {
     echo "Shutting down SSH proxy."
-    ssh_cmd="ssh -S ~/.ssh/control/%h_%p_%r \
+    ssh_cmd="ssh -S $SSH_CONTROL_DIR/%h_%p_%r \
                  -O exit \
                  ec2-user@$instance_public_ip"
     [ $VERBOSE = yes ] && (echo $ssh_cmd)
@@ -64,7 +68,7 @@ shutdown_proxy()
 
 
 # parse command line
-args=$(getopt hvcl:p:k:f:s:t:a: $*)
+args=$(getopt hvca:d:f:k:l:p:s:t: $*)
 if [ $? -ne 0 ]
 then
     usage
@@ -89,20 +93,28 @@ do
             VERBOSE=yes
             shift;
             ;;
-        -l)
-            l_arg="$2"
+        -a)
+            a_arg="$2"
             shift; shift;
             ;;
-        -p)
-            p_arg="$2"
+        -d)
+            d_arg="$2"
+            shift; shift;
+            ;;
+        -f)
+            f_arg="$2"
             shift; shift;
             ;;
         -k)
             k_arg="$2"
             shift; shift;
             ;;
-        -f)
-            f_arg="$2"
+        -l)
+            l_arg="$2"
+            shift; shift;
+            ;;
+        -p)
+            p_arg="$2"
             shift; shift;
             ;;
         -s)
@@ -113,16 +125,17 @@ do
             t_arg="$2"
             shift; shift;
             ;;
-        -a)
-            a_arg="$2"
-            shift; shift;
-            ;;
         --)
             shift;
             break;
             ;;
     esac
 done
+
+
+# load defaults
+LOCAL_PROXY_PORT=$port_default
+SSH_CONTROL_DIR=$default_control_dir
 
 
 # load global configuration file in same directory as script
@@ -150,28 +163,25 @@ fi
 
 
 # load config from arguments
+[ "$a_arg"X != X ] && AWS_EC2_AMI_ID="$a_arg"
+[ "$d_arg"X != X ] && SSH_CONTROL_DIR="$d_arg"
+[ "$f_arg"X != X ] && AWS_EC2_SSH_KEY_FILE_NAME="$f_arg"
+[ "$k_arg"X != X ] && AWS_EC2_SSH_KEY_NAME="$k_arg"
 [ "$l_arg"X != X ] && LOCAL_PROXY_PORT="$l_arg"
 [ "$p_arg"X != X ] && AWS_PROFILE="$p_arg"
-[ "$k_arg"X != X ] && AWS_EC2_SSH_KEY_NAME="$k_arg"
-[ "$f_arg"X != X ] && AWS_EC2_SSH_KEY_FILE_NAME="$f_arg"
 [ "$s_arg"X != X ] && AWS_EC2_SECURITY_GROUP="$s_arg"
 [ "$t_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$t_arg"
-[ "$a_arg"X != X ] && AWS_EC2_AMI_ID="$a_arg"
 
 
+# run usage
 if [ "$h_arg"X != X ]
 then
     usage
     exit 0
 fi
 
-# check config
 
-# use proxy port if not set
-if [ "$LOCAL_PROXY_PORT"X = X ]
-then
-    LOCAL_PROXY_PORT=$port_default
-fi
+# check config
 
 # security group and profile will be default if not set
 if [ "$AWS_PROFILE"X = X ]
@@ -194,13 +204,14 @@ then
     echo "\
 
 VERBOSE:                   $VERBOSE
+AWS_EC2_AMI_ID:            $AWS_EC2_AMI_ID
+SSH_CONTROL_DIR:           $SSH_CONTROL_DIR
+AWS_EC2_SSH_KEY_FILE_NAME: $AWS_EC2_SSH_KEY_FILE_NAME
+AWS_EC2_SSH_KEY_NAME:      $AWS_EC2_SSH_KEY_NAME
 LOCAL_PROXY_PORT:          $LOCAL_PROXY_PORT
 AWS_PROFILE:               $AWS_PROFILE
-AWS_EC2_SSH_KEY_NAME:      $AWS_EC2_SSH_KEY_NAME
-AWS_EC2_SSH_KEY_FILE_NAME: $AWS_EC2_SSH_KEY_FILE_NAME
 AWS_EC2_SECURITY_GROUP:    $AWS_EC2_SECURITY_GROUP
 AWS_EC2_INSTANCE_TYPE:     $AWS_EC2_INSTANCE_TYPE
-AWS_EC2_AMI_ID:            $AWS_EC2_AMI_ID
 "
 fi
 
@@ -214,20 +225,20 @@ conf_error=no
 [ "$AWS_EC2_AMI_ID"X = X ]            && echo "AWS_EC2_AMI_ID not set"            && conf_error=yes
 
 
-# check for .ssh/control
-if [ ! -d ~/.ssh/control ]
+# check SSH control directory
+if [ ! -d $SSH_CONTROL_DIR ]
 then
-    echo "This scripts requires ~/.ssh/control to exist"
-    echo "with perms set to 0700."
-    echo "$ mkdir ~/.ssh/control"
-    echo "$ chmod 0700 ~/.ssh/control"
+    echo "\
+This script requires the SSH control directory to exist with perms set to 0700.
+  $ mkdir $SSH_CONTROL_DIR
+  $ chmod 0700 $SSH_CONTROL_DIR"
     conf_error=yes
 else
-    if [ $(ls -ld ~/.ssh/control | cut -c 2-10) != "rwx------" ]
+    if [ $(ls -ld $SSH_CONTROL_DIR | cut -c 2-10) != "rwx------" ]
     then
-        echo "This script requires permisions on ~/.ssh/control"
-        echo "to be 0700."
-        echo "$ chmod 0700 ~/.ssh/control"
+        echo "\
+This script requires permisions on the SSH control directory to be 0700.
+  $ chmod 0700 $SSH_CONTROL_DIR"
         conf_error=yes
     fi
 fi
@@ -369,7 +380,7 @@ echo "Making ssh socks5 connection to $instance_public_ip:  \c"
 
 ssh_cmd="ssh -i ~/.ssh/$AWS_EC2_SSH_KEY_FILE_NAME \
              -f -n -N -M \
-             -S ~/.ssh/control/%h_%p_%r \
+             -S $SSH_CONTROL_DIR/%h_%p_%r \
              -D $LOCAL_PROXY_PORT \
              -o StrictHostKeyChecking=no \
              -o UserKnownHostsFile=/dev/null \
