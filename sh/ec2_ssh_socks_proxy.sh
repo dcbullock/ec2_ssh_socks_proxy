@@ -1,8 +1,9 @@
 #!/bin/sh
 
 
-port_default=9080
-default_control_dir="$HOME/.ssh/control"
+# load defaults
+LOCAL_PROXY_PORT=9080
+SSH_CONTROL_DIR="$HOME/.ssh/control"
 
 
 # set VERBOSE so it can be assumed not empty in further usage
@@ -18,10 +19,10 @@ Usage: $(basename $0)
        [-c]                           : check config and quit
        [-a AWS_AMI_ID]                : aws instance type
        [-d SSH_CONTROL_DIR            : directory for ssh master socket
-                                      :   ($default_control_dir)
+                                      :   ($SSH_CONTROL_DIR)
        [-f AWS_EC2_SSH_KEY_FILE_NAME] : aws ec2 ssh key file name
        [-k AWS_EC2_SSH_KEY_NAME]      : aws ec2 ssh key name
-       [-l LOCAL_PROXY_PORT]          : local socks5 listen port ($port_default)
+       [-l LOCAL_PROXY_PORT]          : local socks5 listen port ($LOCAL_PROXY_PORT)
        [-p AWS_PROFILE]               : aws profile name
        [-s AWS_EC2_SECURITY_GROUP]    : aws ec2 security group
        [-t AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
@@ -131,11 +132,6 @@ do
             ;;
     esac
 done
-
-
-# load defaults
-LOCAL_PROXY_PORT=$port_default
-SSH_CONTROL_DIR=$default_control_dir
 
 
 # load global configuration file in same directory as script
