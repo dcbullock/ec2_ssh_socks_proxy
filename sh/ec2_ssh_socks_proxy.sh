@@ -195,6 +195,37 @@ else
 fi
 
 
+# check and build the ssh key filename
+ssh_key_file_found=no
+ssh_key_file_dir=$(dirname "$AWS_EC2_SSH_KEY_FILE_NAME")
+if [ "$ssh_key_file_dir" = "." ]
+then
+    # dirname is ".", so either ./file was specified or no dirpath was specified
+
+    # look first for file in working dir, then in $HOME/.ssh
+    if [ -f "$AWS_EC2_SSH_KEY_FILE_NAME" ]
+    then
+        # make sure the dot is in the path (multiple dots are ok)
+        AWS_EC2_SSH_KEY_FILE_NAME="./$AWS_EC2_SSH_KEY_FILE_NAME"
+        ssh_key_file_found=yes
+    elif [ -f "$HOME/.ssh/$AWS_EC2_SSH_KEY_FILE_NAME" ]
+    then
+        # set the full path
+        AWS_EC2_SSH_KEY_FILE_NAME="$HOME/.ssh/$AWS_EC2_SSH_KEY_FILE_NAME"
+        ssh_key_file_found=yes
+    fi
+elif [ -f "$AWS_EC2_SSH_KEY_FILE" ]
+then
+    ssk_key_file_found=yes
+fi
+
+if [ $ssh_key_file_found != yes ]
+then
+    echo "SSH key file not found."
+    conf_error=yes
+fi
+
+
 if [ "$VERBOSE"X = "yesX" ]
 then
     echo "\
@@ -239,6 +270,9 @@ This script requires permisions on the SSH control directory to be 0700.
     fi
 fi
 
+
+
+
 if [ $conf_error != no ]
 then
     echo "Configuration error -- exiting."
@@ -246,6 +280,7 @@ then
 fi
 
 [ "$exit_after_config"X = yesX ] && exit 0
+
 
 
 # get the AMI ID for the latest Amazon Linux AMI
@@ -374,7 +409,7 @@ fi
 
 echo "Making ssh socks5 connection to $instance_public_ip:  \c"
 
-ssh_cmd="ssh -i ~/.ssh/$AWS_EC2_SSH_KEY_FILE_NAME \
+ssh_cmd="ssh -i $AWS_EC2_SSH_KEY_FILE_NAME \
              -f -n -N -M \
              -S $SSH_CONTROL_DIR/%h_%p_%r \
              -D $LOCAL_PROXY_PORT \
