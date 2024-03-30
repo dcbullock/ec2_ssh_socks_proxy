@@ -29,8 +29,8 @@ Usage: $(basename $0)
        overridden by shell variables set in the local config file,
        which in turn are overridden by the option arguments.
 
-       Run $(basename $0) -c to see where the script look for the
-       global config file.  The local config file is opened from
+       Run $(basename $0) -c to see where the script will look for
+       the global config file.  The local config file is opened from
        current diretory.
 "
 }
