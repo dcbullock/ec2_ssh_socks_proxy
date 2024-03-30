@@ -11,16 +11,16 @@ usage()
 {
     echo "\
 Usage: $(basename $0)
-       [-h]                                  : print help
-       [-v]                                  : verbose output
-       [-c]                                  : check config and quit
-       [-l LOCAL_PROXY_PORT ($port_default)] : local socks5 listen port
-       [-p AWS_PROFILE]                      : aws profile name
-       [-k AWS_EC2_SSH_KEY_NAME]             : aws ec2 ssh key name
-       [-f AWS_EC2_SSH_KEY_FILE_NAME]        : aws ec2 ssh key file name
-       [-s AWS_EC2_SECURITY_GROUP]           : aws ec2 security group
-       [-i AWS_EC2_INSTANCE_TYPE]            : aws ec2 instance type
-       [-a AWS_AMI_ID]                       : aws instance type
+       [-h]                           : print help
+       [-v]                           : verbose output
+       [-c]                           : check config and quit
+       [-l LOCAL_PROXY_PORT]          : local socks5 listen port ($port_default)
+       [-p AWS_PROFILE]               : aws profile name
+       [-k AWS_EC2_SSH_KEY_NAME]      : aws ec2 ssh key name
+       [-f AWS_EC2_SSH_KEY_FILE_NAME] : aws ec2 ssh key file name
+       [-s AWS_EC2_SECURITY_GROUP]    : aws ec2 security group
+       [-i AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
+       [-a AWS_AMI_ID]                : aws instance type
 
        All arguments can be set via environment variables named the
        same as shown above in the option arguments. Variables defined
@@ -330,7 +330,7 @@ do
     # which will give sshd some to start
     instance_indicator=$(echo $instance_state | cut -c 1)
     loop_count=0
-    while [ $loop_count -lt 5 ]
+    while [ $loop_count -lt 2 ]
     do
         loop_count=$((loop_count + 1))
         sleep 1
@@ -391,7 +391,7 @@ do
     fi
     
     loop_count=0
-    while [ $loop_count -lt 5 ]
+    while [ $loop_count -lt 2 ]
     do
         loop_count=$((loop_count + 1))
         sleep 1
