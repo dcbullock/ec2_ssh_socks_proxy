@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-port_default=9443
+port_default=9080
 
 # set VERBOSE so it can be assumed not empty in further usage
 VERBOSE=no
