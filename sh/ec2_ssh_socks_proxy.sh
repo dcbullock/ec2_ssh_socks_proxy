@@ -6,30 +6,35 @@ port_default=9443
 # set VERBOSE so it can be assumed not empty in further usage
 VERBOSE=no
 
+
 usage()
 {
-    echo "Usage: $(basename $0)"
-    echo "       [-h]                                  : print help"
-    echo "       [-v]                                  : verbose output"
-    echo "       [-c]                                  : check config and quit"
-    echo "       [-l LOCAL_PROXY_PORT ($port_default)] : local socks5 listen port"
-    echo "       [-p AWS_PROFILE]                      : aws profile name"
-    echo "       [-k AWS_EC2_SSH_KEY_NAME]             : aws ec2 ssh key name"
-    echo "       [-f AWS_EC2_SSH_KEY_FILE_NAME]        : aws ec2 ssh key file name"
-    echo "       [-s AWS_EC2_SECURITY_GROUP]           : aws ec2 security group"  
-    echo "       [-i AWS_EC2_INSTANCE_TYPE]            : aws ec2 instance type"
-    echo "       [-a AWS_AMI_ID]                       : aws instance type"
-    echo
-    echo "       All arguments can be set via environment variables named the"
-    echo "       same as shown above in the option arguments. Variables defined"
-    echo "       in the environment before runtime will be overridden by shell"
-    echo "       variables set in the global config file locate at"
-    echo "         $GLOBAL_CONF_FILE,"
-    echo "       which in turn will be overridden by shell variables set in"
-    echo "       the local config file, $LOCAL_CONF_FILE, which in turn are"
-    echo "       overridden by the option arguments."
-    echo
+    echo "\
+Usage: $(basename $0)
+       [-h]                                  : print help
+       [-v]                                  : verbose output
+       [-c]                                  : check config and quit
+       [-l LOCAL_PROXY_PORT ($port_default)] : local socks5 listen port
+       [-p AWS_PROFILE]                      : aws profile name
+       [-k AWS_EC2_SSH_KEY_NAME]             : aws ec2 ssh key name
+       [-f AWS_EC2_SSH_KEY_FILE_NAME]        : aws ec2 ssh key file name
+       [-s AWS_EC2_SECURITY_GROUP]           : aws ec2 security group
+       [-i AWS_EC2_INSTANCE_TYPE]            : aws ec2 instance type
+       [-a AWS_AMI_ID]                       : aws instance type
+
+       All arguments can be set via environment variables named the
+       same as shown above in the option arguments. Variables defined
+       in the environment before runtime will be overridden by shell
+       variables set in the global config file, which in turn will be
+       overridden by shell variables set in the local config file,
+       which in turn are overridden by the option arguments.
+
+       Run $(basename $0) -c to see where the script look for the
+       global config file.  The local config file is opened from
+       current diretory.
+"
 }
+
 
 
 shutdown_proxy()
@@ -72,8 +77,8 @@ while [ $# -ne 0 ]
 do
     case "$1" in
         -h)
-            usage
-            exit 0
+            h_arg=yes
+            shift;
             ;;
         -v)
             VERBOSE=yes
@@ -153,6 +158,12 @@ fi
 [ "$t_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$t_arg"
 [ "$a_arg"X != X ] && AWS_EC2_AMI_ID="$a_arg"
 
+
+if [ "$h_arg"X != X ]
+then
+    usage
+    exit 0
+fi
 
 # check config
 
