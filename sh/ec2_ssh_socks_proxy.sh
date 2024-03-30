@@ -68,8 +68,11 @@ shutdown_proxy()
     $aws_cmd
     if [ $? -ne 0 ]
     then
-        echo
-        echo "Error terminating instance - log into AWS console and clean up EC2 instances."
+        echo "\
+Error terminating instance.
+Terminate $instance_id in the AWS EC2 console or with the command line:
+aws $AWS_PROFILE --output text --no-cli-pager ec2 terminate-instances --instance-ids $instance_id
+log into AWS console and clean up EC2 instances."
         exit 128
     fi
 }
@@ -270,15 +273,23 @@ if [ ! -d $SSH_CONTROL_DIR ]
 then
     echo "\
 This script requires the SSH control directory to exist with perms set to 0700.
-  $ mkdir $SSH_CONTROL_DIR
-  $ chmod 0700 $SSH_CONTROL_DIR"
+Use these commands:
+
+mkdir $SSH_CONTROL_DIR
+chmod 0700 $SSH_CONTROL_DIR
+"
+
     conf_error=yes
 else
     if [ $(ls -ld $SSH_CONTROL_DIR | cut -c 2-10) != "rwx------" ]
     then
         echo "\
 This script requires permisions on the SSH control directory to be 0700.
-  $ chmod 0700 $SSH_CONTROL_DIR"
+Use this command:
+
+chmod 0700 $SSH_CONTROL_DIR
+"
+
         conf_error=yes
     fi
 fi
