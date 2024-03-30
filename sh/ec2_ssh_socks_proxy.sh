@@ -58,8 +58,7 @@ shutdown_proxy()
 }
 
 
-
-# load command line config
+# parse command line
 args=$(getopt hvcl:p:k:f:s:i:a: $*)
 if [ $? -ne 0 ]
 then
@@ -69,7 +68,6 @@ fi
 
 set -- $args
 
-# check for early operational options
 while [ $# -ne 0 ]
 do
     case "$1" in
@@ -85,6 +83,34 @@ do
             exit_after_config=yes
             VERBOSE=yes
             shift;
+            ;;
+        -l)
+            l_arg="$2"
+            shift; shift;
+            ;;
+        -p)
+            p_arg="$2"
+            shift; shift;
+            ;;
+        -k)
+            k_arg="$2"
+            shift; shift;
+            ;;
+        -f)
+            f_arg="$2"
+            shift; shift;
+            ;;
+        -s)
+            s_arg="$2"
+            shift; shift;
+            ;;
+        -i)
+            i_arg="$2"
+            shift; shift;
+            ;;
+        -a)
+            a_arg="$2"
+            shift; shift;
             ;;
         --)
             shift;
@@ -118,54 +144,14 @@ then
 fi
 
 
-# load remaining command line config
-while [ $# -ne 0 ]
-do
-    case "$1" in
-        -h)
-            usage
-            exit 0
-            ;;
-        -v)
-            VERBOSE=yes
-            shift;
-            ;;
-        -c)
-            exit_after_config=yes
-            VERBOSE=yes
-            shift;
-            ;;
-        -l)
-            LOCAL_PROXY_PORT="$2"
-            shift; shift;
-            ;;
-        -p)
-            AWS_PROFILE="$2"
-            shift; shift;
-            ;;
-        -k)
-            AWS_EC2_SSH_KEY_NAME="$2"
-            shift; shift;
-            ;;
-        -f)
-            AWS_EC2_SSH_KEY_FILE_NAME="$2"
-            shift; shift;
-            ;;
-        -s) AWS_EC2_SECURITY_GROUP="$2"
-            shift; shift;
-            ;;
-        -i) AWS_EC2_INSTANCE_TYPE="$2"
-            shift; shift;
-            ;;
-        -a) AWS_EC2_AMI_ID="$2"
-            shift; shift;
-            ;;
-        --)
-            shift;
-            break;
-            ;;
-        esac
-done
+# load config from arguments
+[ "$l_arg"X != X ] && LOCAL_PROXY_PORT="$l_arg"
+[ "$p_arg"X != X ] && AWS_PROFILE="$p_arg"
+[ "$k_arg"X != X ] && AWS_EC2_SSH_KEY_NAME="$k_arg"
+[ "$f_arg"X != X ] && AWS_EC2_SSH_KEY_FILE_NAME="$f_arg"
+[ "$s_arg"X != X ] && AWS_EC2_SECURITY_GROUP="$s_arg"
+[ "$i_arg"X != X ] && AWS_EC2_INSTANCE_TYPE="$i_arg"
+[ "$a_arg"X != X ] && AWS_EC2_AMI_ID="$a_arg"
 
 
 # check config
