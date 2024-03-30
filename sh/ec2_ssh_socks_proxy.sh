@@ -456,7 +456,7 @@ do
     $ssh_cmd > /dev/null 2>&1
 done
 
-echo "success - port $LOCAL_PROXY_PORT"
+echo " success - port $LOCAL_PROXY_PORT"
 ssh_exit=no
 while [ $ssh_exit = "no" ]
 do
