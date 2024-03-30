@@ -65,9 +65,9 @@ shutdown_proxy()
                  ec2 terminate-instances \
                  --instance-ids $instance_id"
     [ $VERBOSE = yes ] && echo $aws_cmd
-#    $aws_cmd
-#    if [ $? -ne 0 ]
-#    then
+    $aws_cmd
+    if [ $? -ne 0 ]
+    then
         echo "\
 Error terminating instance.
 Terminate $instance_id in the AWS EC2 console or with the aws-cli command line:
@@ -75,7 +75,7 @@ Terminate $instance_id in the AWS EC2 console or with the aws-cli command line:
 aws $AWS_PROFILE --output text --no-cli-pager ec2 terminate-instances --instance-ids $instance_id
 "
         exit 128
-#    fi
+    fi
 }
 
 
