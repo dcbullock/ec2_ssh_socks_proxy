@@ -19,7 +19,7 @@ Usage: $(basename $0)
        [-v]                           : verbose output
        [-c]                           : check config and quit
        [-a AWS_AMI_ID]                : aws instance type
-       [-d SSH_CONTROL_DIR            : directory for ssh master socket
+       [-d SSH_CONTROL_DIR]           : directory for ssh master socket
                                       :   ($SSH_CONTROL_DIR)
        [-f AWS_EC2_SSH_KEY_FILE_NAME] : aws ec2 ssh key file name
        [-k AWS_EC2_SSH_KEY_NAME]      : aws ec2 ssh key name
@@ -27,8 +27,8 @@ Usage: $(basename $0)
        [-p AWS_PROFILE]               : aws profile name
        [-s AWS_EC2_SECURITY_GROUP]    : aws ec2 security group
        [-t AWS_EC2_INSTANCE_TYPE]     : aws ec2 instance type
-       [-w CMD_POLL_WAIT]             : seconds to wait betwen AWS commands
-                                          when polling ($CMD_POLL_WAIT)
+       [-w CMD_POLL_WAIT]             : seconds to wait betwen commands when
+                                          polling ($CMD_POLL_WAIT)
 
        All arguments can be set via environment variables named the
        same as shown above in the option arguments. Variables defined
@@ -40,6 +40,10 @@ Usage: $(basename $0)
        Run $(basename $0) -c to see where the script will look for
        the global config file.  The local config file is opened from
        current diretory.
+
+       AWS arm_64 AMIs boot and start sshd about 4 times faster than
+       Intel AMIs.  The smallest instance type should be fine for a proxy.
+       (Tested 2024-03-29 using arm AMI in t4g.nano instance type.)
 "
 }
 
